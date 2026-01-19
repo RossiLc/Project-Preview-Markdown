@@ -1,151 +1,182 @@
 # Markdown 在线预览工具
 
-一个支持文件上传、在线预览 Markdown 文件的 Web 应用，使用 Node.js 开发，支持 Docker 部署。
-
-## 功能特性
-
-- **Markdown 渲染**：支持 GitHub 风格的 Markdown 渲染
-- **代码高亮**：使用 Highlight.js 进行代码语法高亮
-- **Mermaid 图表**：支持 Mermaid 流程图、时序图等
-- **文件上传**：支持拖拽上传或点击上传 Markdown 文件
-- **文件管理**：查看、切换、删除已上传的文件
-- **自动目录**：自动生成文档目录，支持点击跳转
-- **响应式设计**：支持移动端和桌面端访问
+一个基于 Vue 3 + Express 的 Markdown 在线预览工具，支持文件上传、预览和管理。
 
 ## 项目结构
 
 ```
-.
-├── server.js           # Node.js 后端服务器
-├── package.json        # 项目依赖配置
-├── Dockerfile          # Docker 镜像构建文件
-├── .dockerignore       # Docker 构建忽略文件
-├── index.html          # 前端页面
-├── resource/           # 前端资源文件
-│   ├── marked.min.js
-│   ├── highlight.min.js
-│   └── mermaid.min.js
-└── markdown/           # Markdown 文件存储目录
+Project-Preview-Markdown/
+├── frontend/                 # Vue 3 前端项目
+│   ├── src/
+│   │   ├── components/      # Vue 组件
+│   │   │   ├── Sidebar.vue
+│   │   │   ├── MarkdownViewer.vue
+│   │   │   └── FileModal.vue
+│   │   ├── api/            # API 接口
+│   │   │   └── files.js
+│   │   ├── utils/          # 工具函数
+│   │   │   └── markdown.js
+│   │   ├── assets/         # 静态资源
+│   │   │   └── styles.css
+│   │   ├── App.vue         # 根组件
+│   │   └── main.js         # 入口文件
+│   ├── public/             # 公共资源
+│   │   └── resource/       # JavaScript 库文件
+│   │       ├── marked.min.js
+│   │       ├── highlight.min.js
+│   │       └── mermaid.min.js
+│   ├── index.html          # HTML 模板
+│   ├── vite.config.js      # Vite 配置
+│   └── package.json
+│
+├── backend/                 # Express 后端项目
+│   ├── src/
+│   │   ├── routes/         # 路由
+│   │   │   └── fileRoutes.js
+│   │   ├── controllers/    # 控制器
+│   │   │   └── fileController.js
+│   │   ├── middleware/     # 中间件
+│   │   │   ├── upload.js
+│   │   │   └── errorHandler.js
+│   │   ├── config/         # 配置
+│   │   │   └── config.js
+│   │   └── index.js        # 入口文件
+│   ├── public/             # 前端构建产物（由前端构建生成）
+│   ├── uploads/            # 上传文件目录
+│   └── package.json
+│
+├── deploy/                  # 部署配置
+│   └── docker/             # Docker 配置文件
+│       ├── backend.Dockerfile
+│       └── docker-compose.yml
+│
+└── README.md               # 项目文档
 ```
 
-## 本地开发
+## 功能特性
+
+- ✅ Markdown 文件上传
+- ✅ 实时预览 Markdown 内容
+- ✅ 支持代码高亮（Highlight.js）
+- ✅ 支持 Mermaid 图表
+- ✅ 自动生成目录（TOC）
+- ✅ 文件管理（上传、删除、切换）
+- ✅ 响应式设计
+- ✅ Docker 部署支持
+
+## 技术栈
+
+### 前端
+- Vue 3 - 渐进式 JavaScript 框架
+- Vite - 下一代前端构建工具
+- Axios - HTTP 客户端
+- Marked - Markdown 解析器（本地资源文件）
+- Highlight.js - 代码高亮（本地资源文件）
+- Mermaid - 图表渲染（本地资源文件）
+
+注：前端使用本地 JavaScript 库文件（位于 `frontend/public/resource/`），通过 script 标签引入，无需 npm 安装。
+
+### 后端
+- Express - Node.js Web 框架
+- Multer - 文件上传中间件
+- CORS - 跨域资源共享
+
+## 开发环境运行
 
 ### 前置要求
-
-- Node.js 16.0 或更高版本
+- Node.js >= 16.0.0
 - npm 或 yarn
 
-### 安装依赖
+### 1. 安装依赖
 
 ```bash
+# 安装后端依赖
+cd backend
+npm install
+
+# 安装前端依赖
+cd ../frontend
 npm install
 ```
 
-### 启动开发服务器
+### 2. 启动开发服务器
 
 ```bash
-npm start
-```
+# 启动后端服务器（端口 3000）
+cd backend
+npm run dev
 
-或使用 nodemon 自动重启：
-
-```bash
+# 在新终端启动前端开发服务器（端口 5173）
+cd frontend
 npm run dev
 ```
 
-服务器将在 `http://localhost:3000` 启动。
+### 3. 访问应用
+
+打开浏览器访问：http://localhost:5173
+
+## 生产环境部署
+
+### 1. 构建前端
+
+```bash
+cd frontend
+npm run build
+```
+
+构建产物将自动生成在 `backend/public/` 目录。
+
+### 2. 启动后端服务
+
+```bash
+cd backend
+npm start
+```
+
+后端服务将同时提供：
+- 前端静态文件（通过 `/` 路由）
+- API 接口（通过 `/api` 路由）
+- Markdown 文件（通过 `/markdown` 路由）
+
+访问：http://localhost:3000
 
 ## Docker 部署
 
-### 方式一：使用 Docker
+Docker 部署采用单容器架构，后端容器同时提供前端静态文件和 API 服务。
 
-#### 1. 构建 Docker 镜像
-
-```bash
-docker build -t markdown-preview .
-```
-
-#### 2. 运行容器
+### 使用 Docker Compose（推荐）
 
 ```bash
-docker run -d -p 3000:3000 -v $(pwd)/markdown:/app/markdown --name markdown-preview markdown-preview
-```
+# 进入 Docker 配置目录
+cd deploy/docker
 
-参数说明：
-- `-d`：后台运行
-- `-p 3000:3000`：映射端口，可以改为 `-p 8080:3000` 使用其他端口
-- `-v $(pwd)/markdown:/app/markdown`：挂载 markdown 目录，持久化存储上传的文件
-- `--name markdown-preview`：容器名称
-
-#### 3. 访问应用
-
-在浏览器中打开 `http://localhost:3000`
-
-#### 4. 停止和删除容器
-
-```bash
-docker stop markdown-preview
-docker rm markdown-preview
-```
-
-### 方式二：使用 Docker Compose（推荐）
-
-创建 `docker-compose.yml` 文件：
-
-```yaml
-version: '3.8'
-
-services:
-  markdown-preview:
-    build: .
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./markdown:/app/markdown
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-```
-
-启动服务：
-
-```bash
+# 构建并启动服务
 docker-compose up -d
-```
 
-停止服务：
+# 查看日志
+docker-compose logs -f
 
-```bash
+# 停止服务
 docker-compose down
 ```
 
-## 使用说明
+访问：http://localhost
 
-### 上传文件
+### 单独构建镜像
 
-1. 点击侧边栏的"选择文件"按钮选择 Markdown 文件
-2. 或直接拖拽 `.md` 或 `.markdown` 文件到上传区域
+```bash
+# 从项目根目录构建镜像
+docker build -f deploy/docker/backend.Dockerfile -t markdown-preview .
 
-### 查看文件
+# 运行容器
+docker run -d -p 80:3000 -v $(pwd)/backend/uploads:/app/uploads markdown-preview
+```
 
-- 上传成功后，文件会自动在右侧预览
-- 点击"文件列表"中的任意文件名即可切换预览
-
-### 删除文件
-
-- 鼠标悬停在文件列表中的文件上
-- 点击右侧出现的"删除"按钮
-
-### 浏览目录
-
-- 左侧"目录"区域会自动生成当前文档的标题结构
-- 点击目录项可快速跳转到对应章节
+访问：http://localhost
 
 ## API 接口
 
 ### 获取文件列表
-
 ```
 GET /api/files
 ```
@@ -164,7 +195,6 @@ GET /api/files
 ```
 
 ### 上传文件
-
 ```
 POST /api/upload
 Content-Type: multipart/form-data
@@ -186,7 +216,6 @@ Content-Type: multipart/form-data
 ```
 
 ### 删除文件
-
 ```
 DELETE /api/files/:filename
 ```
@@ -199,26 +228,82 @@ DELETE /api/files/:filename
 }
 ```
 
+### 获取 Markdown 文件内容
+```
+GET /markdown/:filename
+```
+
 ## 环境变量
 
-- `PORT`：服务器端口，默认 3000
-- `NODE_ENV`：运行环境，生产环境设置为 `production`
+### 后端环境变量
 
-## 技术栈
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| PORT | 3000 | 后端服务端口 |
+| CORS_ORIGIN | http://localhost:5173 | 允许的跨域源 |
+| NODE_ENV | development | 运行环境 |
 
-- **后端**：Node.js + Express
-- **文件上传**：Multer
-- **前端**：原生 HTML/CSS/JavaScript
-- **Markdown 渲染**：Marked.js
-- **代码高亮**：Highlight.js
-- **图表渲染**：Mermaid.js
-- **样式**：GitHub Markdown CSS
+### 前端环境变量
+
+前端通过 Vite 代理配置连接后端，无需额外配置。
+
+## 项目迁移说明
+
+本项目已从单体架构重构为前后端分离架构：
+
+### 旧结构
+- 单个 `index.html` 文件包含所有前端代码
+- `server.js` 提供静态文件和 API 服务
+- 所有代码混合在根目录
+
+### 新结构
+- 前端：标准 Vue 3 项目，使用 Vite 构建
+  - JavaScript 库文件（marked, highlight.js, mermaid）作为本地资源存放在 `frontend/public/resource/`
+  - 通过 script 标签引入，无需 npm 安装
+  - 构建产物自动输出到 `backend/public/` 目录
+- 后端：标准 Express 项目，遵循 MVC 模式
+  - 上传文件目录从 `markdown/` 迁移到 `backend/uploads/`
+  - 同时提供前端静态文件和 API 服务
+- 部署架构：单容器部署
+  - 前端构建后集成到后端
+  - Docker 部署只需一个容器
+  - 简化了部署流程和资源消耗
+- Docker 配置：集中管理在 `deploy/docker/` 目录
+- 清晰的目录结构和职责分离
+
+## 开发指南
+
+### 添加新的 Vue 组件
+
+在 `frontend/src/components/` 目录下创建新组件：
+
+```vue
+<template>
+  <div>
+    <!-- 组件模板 -->
+  </div>
+</template>
+
+<script setup>
+// 组件逻辑
+</script>
+```
+
+### 添加新的 API 接口
+
+1. 在 `backend/src/routes/` 添加路由
+2. 在 `backend/src/controllers/` 添加控制器逻辑
+3. 在 `frontend/src/api/` 添加前端调用方法
 
 ## 限制
 
 - 单个文件大小限制：10MB
 - 仅支持 Markdown 文件（.md, .markdown）
 
-## License
+## 许可证
 
-MIT
+MIT License
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request！
